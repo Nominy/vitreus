@@ -67,6 +67,19 @@ macOS and Linux it becomes the default viewer straight away; Windows doesn't
 let apps do that silently, so the installer opens **Settings → Default apps**
 on Vitreus for you to click *Set default*.
 
+**Package managers**
+
+```powershell
+scoop bucket add nominy https://github.com/Nominy/scoop-bucket
+scoop install nominy/vitreus          # Windows
+```
+
+```sh
+brew install --cask nominy/tap/vitreus   # macOS
+```
+
+Both register Vitreus as a photo viewer, and each release updates them.
+
 <details>
 <summary>Options, uninstall and manual download</summary>
 
@@ -194,10 +207,9 @@ macOS arm64/x64 and Linux x64/arm64 and publishes the release with checksums,
 the installers and `latest.json` (read by the in-app update check). The *Pages*
 workflow publishes `site/` and the installers.
 
-Scoop, Homebrew and winget publishing switch on once their secrets exist: create
-`Nominy/scoop-bucket` and `Nominy/homebrew-tap` and add a `PACKAGES_TOKEN`
-secret (contents write on both); submit the first winget version by hand from
-the `package-manifests` artifact, then add a `WINGET_TOKEN` secret.
+Each release also updates the Scoop bucket (`Nominy/scoop-bucket`) and the
+Homebrew tap (`Nominy/homebrew-tap`) through the `PACKAGES_TOKEN` secret, and
+opens a winget pull request once a `WINGET_TOKEN` secret exists.
 </details>
 
 ## Acknowledgements
