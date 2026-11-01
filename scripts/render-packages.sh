@@ -100,15 +100,17 @@ end
 EOF
 
 cat >"$winget/Nominy.Vitreus.yaml" <<EOF
+# yaml-language-server: \$schema=https://aka.ms/winget-manifest.version.1.12.0.schema.json
 PackageIdentifier: Nominy.Vitreus
 PackageVersion: $version
 DefaultLocale: en-US
 ManifestType: version
-ManifestVersion: 1.6.0
+ManifestVersion: 1.12.0
 EOF
 
 {
     cat <<EOF
+# yaml-language-server: \$schema=https://aka.ms/winget-manifest.installer.1.12.0.schema.json
 PackageIdentifier: Nominy.Vitreus
 PackageVersion: $version
 InstallerType: zip
@@ -126,11 +128,12 @@ Installers:
     InstallerUrl: $base/vitreus-windows-x64.zip
     InstallerSha256: $(echo "$win_hash" | tr '[:lower:]' '[:upper:]')
 ManifestType: installer
-ManifestVersion: 1.6.0
+ManifestVersion: 1.12.0
 EOF
 } >"$winget/Nominy.Vitreus.installer.yaml"
 
 cat >"$winget/Nominy.Vitreus.locale.en-US.yaml" <<EOF
+# yaml-language-server: \$schema=https://aka.ms/winget-manifest.defaultLocale.1.12.0.schema.json
 PackageIdentifier: Nominy.Vitreus
 PackageVersion: $version
 PackageLocale: en-US
@@ -149,7 +152,7 @@ Tags:
   - gallery
 ReleaseNotesUrl: https://github.com/$repo/releases/tag/v$version
 ManifestType: defaultLocale
-ManifestVersion: 1.6.0
+ManifestVersion: 1.12.0
 EOF
 
 echo "$out"
