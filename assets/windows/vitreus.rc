@@ -1,0 +1,3 @@
+// 1: app icon (gpui loads id 1 for the window). 2: icon for photo files.
+1 ICON "assets/app/vitreus.ico"
+2 ICON "assets/app/vitreus-file.ico"

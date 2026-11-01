@@ -1,0 +1,182 @@
+# Push a tag that matches Cargo.toml (e.g. v0.1.0) to build every platform
+# and publish a GitHub release with checksums and the installers attached.
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing tag to (re)build, e.g. v0.1.0
+        required: true
+
+permissions:
+  contents: write
+
+env:
+  CARGO_TERM_COLOR: always
+  TAG: ${{ inputs.tag || github.ref_name }}
+
+jobs:
+  build:
+    name: ${{ matrix.os }}-${{ matrix.arch }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: linux
+            arch: x64
+            runner: ubuntu-22.04
+            target: x86_64-unknown-linux-gnu
+          - os: linux
+            arch: arm64
+            runner: ubuntu-22.04-arm
+            target: aarch64-unknown-linux-gnu
+          - os: macos
+            arch: arm64
+            runner: macos-14
+            target: aarch64-apple-darwin
+          - os: macos
+            arch: x64
+            runner: macos-14
+            target: x86_64-apple-darwin
+          - os: windows
+            arch: x64
+            runner: windows-latest
+            target: x86_64-pc-windows-msvc
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TAG }}
+
+      - name: Tag matches Cargo.toml
+        shell: bash
+        run: |
+          version="$(sed -n 's/^version = "\(.*\)"$/\1/p' Cargo.toml | head -n 1)"
+          if [ "$TAG" != "v$version" ]; then
+            echo "::error::Tag $TAG doesn't match Cargo.toml version $version"
+            exit 1
+          fi
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.target }}
+
+      - name: Linux build dependencies
+        if: matrix.os == 'linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libxkbcommon-dev libxkbcommon-x11-dev libwayland-dev \
+            libvulkan-dev libx11-xcb-dev libxcb1-dev libfontconfig1-dev
+
+      - name: Build
+        run: cargo build --release --locked --target ${{ matrix.target }}
+
+      - name: Package
+        shell: bash
+        run: |
+          ext=""
+          if [ "${{ matrix.os }}" = windows ]; then ext=".exe"; fi
+          sh scripts/package.sh ${{ matrix.os }} ${{ matrix.arch }} \
+            "target/${{ matrix.target }}/release/vitreus$ext" dist
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: vitreus-${{ matrix.os }}-${{ matrix.arch }}
+          path: dist/*
+          if-no-files-found: error
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TAG }}
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Checksums, installers and update feed
+        run: |
+          cp install.sh install.ps1 dist/
+          # The app's update check reads this from releases/latest/download/.
+          printf '{"version": "%s", "tag": "%s", "url": "https://github.com/%s/releases/tag/%s"}\n' \
+            "${TAG#v}" "$TAG" "$GITHUB_REPOSITORY" "$TAG" > dist/latest.json
+          cd dist
+          sha256sum vitreus-* install.sh install.ps1 latest.json > SHA256SUMS
+          cat SHA256SUMS
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" dist/* --clobber
+          else
+            prerelease=""
+            case "$TAG" in *-*) prerelease="--prerelease" ;; esac
+            gh release create "$TAG" dist/* --verify-tag --title "Vitreus $TAG" --generate-notes $prerelease
+          fi
+
+  # Scoop bucket (Nominy/scoop-bucket), Homebrew tap (Nominy/homebrew-tap) and
+  # winget. Each step is skipped until its token secret exists; pre-releases
+  # (tags with a "-") are never published to package managers.
+  packages:
+    needs: publish
+    if: ${{ !contains(inputs.tag || github.ref_name, '-') }}
+    runs-on: ubuntu-latest
+    env:
+      PACKAGES_TOKEN: ${{ secrets.PACKAGES_TOKEN }}
+      WINGET_TOKEN: ${{ secrets.WINGET_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TAG }}
+
+      - name: Render manifests
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release download "$TAG" --pattern SHA256SUMS --dir release
+          sh scripts/render-packages.sh "$TAG" release/SHA256SUMS packages
+
+      - name: Push Scoop bucket and Homebrew tap
+        if: env.PACKAGES_TOKEN != ''
+        run: |
+          push() {
+            repo="$1"; from="$2"; to="$3"
+            dir="$(mktemp -d)"
+            git clone --depth 1 "https://x-access-token:${PACKAGES_TOKEN}@github.com/$repo.git" "$dir"
+            mkdir -p "$dir/$(dirname "$to")"
+            cp "$from" "$dir/$to"
+            git -C "$dir" add "$to"
+            if git -C "$dir" diff --cached --quiet; then echo "$repo already up to date"; return; fi
+            git -C "$dir" -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+              commit -m "vitreus $TAG"
+            git -C "$dir" push
+          }
+          push Nominy/scoop-bucket packages/scoop/vitreus.json bucket/vitreus.json
+          push Nominy/homebrew-tap packages/homebrew/Casks/vitreus.rb Casks/vitreus.rb
+
+      - name: Submit to winget
+        if: env.WINGET_TOKEN != ''
+        uses: vedantmgoyal9/winget-releaser@v2
+        with:
+          identifier: Nominy.Vitreus
+          release-tag: ${{ env.TAG }}
+          installers-regex: 'windows-x64\.zip$'
+          token: ${{ secrets.WINGET_TOKEN }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: package-manifests
+          path: packages

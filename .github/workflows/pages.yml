@@ -1,0 +1,46 @@
+# Publishes site/ plus the installers to https://nominy.github.io/vitreus/
+# (Settings -> Pages -> Source: GitHub Actions).
+name: Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - site/**
+      - install.sh
+      - install.ps1
+      - .github/workflows/pages.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Assemble site
+        run: |
+          mkdir _site
+          cp -R site/. _site/
+          cp install.sh _site/install
+          cp install.sh _site/install.sh
+          cp install.ps1 _site/install.ps1
+          cp assets/brand/vitreus-mark.svg _site/logo.svg
+          cp assets/app/vitreus-256.png _site/icon.png
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deploy
+        uses: actions/deploy-pages@v4

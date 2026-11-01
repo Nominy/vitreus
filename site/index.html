@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Vitreus — a fast, no-nonsense photo viewer</title>
+  <meta name="description" content="Vitreus is a fast, no-nonsense photo viewer for Windows, macOS and Linux. Double-click a photo, flick through the folder, press Esc. Free and open source.">
+  <meta name="theme-color" content="#0b1a2a">
+  <meta property="og:title" content="Vitreus — a fast, no-nonsense photo viewer">
+  <meta property="og:description" content="Double-click a photo, flick through the folder, press Esc. Windows, macOS and Linux.">
+  <meta property="og:image" content="https://nominy.github.io/vitreus/screenshot.jpg">
+  <meta property="og:url" content="https://nominy.github.io/vitreus/">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="icon.png">
+  <style>
+    :root {
+      --bg: #0b1a2a; --panel: #0f2740; --line: #ffffff1a; --text: #eef7ff; --muted: #9db4c8;
+      --celeste: #8fd3fb; --ink: #071629;
+      --mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+      --display: "Sora", Inter, -apple-system, "Segoe UI", system-ui, sans-serif;
+    }
+    @font-face { font-family: "Sora"; src: url("fonts/Sora.ttf") format("truetype"); font-weight: 100 800; font-display: swap; }
+    * { box-sizing: border-box; }
+    html { background: var(--bg); }
+    body { margin: 0; color: var(--text); font: 16px/1.6 Inter, -apple-system, "Segoe UI", system-ui, sans-serif; background: var(--bg); min-height: 100vh; }
+    a { color: inherit; }
+    .wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+    nav { display: flex; align-items: center; justify-content: space-between; padding: 22px 0; }
+    .brand { display: flex; align-items: center; gap: 10px; font: 600 18px var(--display); letter-spacing: -.2px; text-decoration: none; }
+    .brand img { width: 26px; height: 26px; }
+    nav .links { display: flex; gap: 22px; color: var(--muted); font-size: 15px; }
+    nav .links a { text-decoration: none; } nav .links a:hover { color: var(--text); }
+
+    header { text-align: center; padding: 64px 0 28px; }
+    header .mark { width: 104px; height: 104px; }
+    h1 { font-family: var(--display); font-size: clamp(40px, 6vw, 68px); line-height: 1.04; margin: 26px 0 14px; letter-spacing: -2px; font-weight: 600; }
+    h1 span { color: var(--celeste); }
+    .lede { color: var(--muted); font-size: 19px; max-width: 640px; margin: 0 auto; }
+
+    .install { max-width: 680px; margin: 38px auto 0; }
+    .tabs { display: inline-flex; gap: 4px; padding: 4px; background: var(--panel); border: 1px solid var(--line); margin-bottom: 10px; }
+    .tabs button { all: unset; cursor: pointer; padding: 6px 14px; color: var(--muted); font-size: 14px; }
+    .tabs button[aria-selected="true"] { background: var(--celeste); color: var(--ink); }
+    .cmd { display: flex; align-items: center; gap: 12px; background: var(--ink); border: 1px solid var(--line); padding: 14px 14px 14px 18px; text-align: left; }
+    .cmd code { flex: 1; font: 15px/1.4 var(--mono); color: var(--text); overflow-x: auto; white-space: nowrap; }
+    .cmd code::before { content: "$ "; color: var(--celeste); }
+    .cmd.ps code::before { content: "> "; }
+    .copy { all: unset; cursor: pointer; font-size: 13px; color: var(--muted); padding: 6px 10px; border: 1px solid var(--line); }
+    .copy:hover { color: var(--text); border-color: #ffffff30; }
+    .hint { color: var(--muted); font-size: 14px; margin-top: 12px; }
+    .hint a { color: var(--celeste); text-decoration: none; }
+
+    .shot { margin: 56px auto 0; max-width: 1080px; }
+    .shot img { width: 100%; display: block; }
+
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; margin: 64px 0; }
+    .card { background: var(--panel); border: 1px solid var(--line); padding: 20px 22px; }
+    .card h3 { margin: 0 0 6px; font: 600 16px var(--display); }
+    .card p { margin: 0; color: var(--muted); font-size: 15px; }
+    .card .k { color: var(--celeste); font-family: var(--mono); font-size: 13px; }
+
+    .keys { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 22px; color: var(--muted); font-size: 14px; margin-bottom: 72px; }
+    kbd { font: 12px var(--mono); color: var(--text); background: #ffffff10; border: 1px solid var(--line); border-bottom-width: 2px; padding: 2px 7px; }
+    .keys kbd { margin-right: 6px; }
+
+    footer { border-top: 1px solid var(--line); padding: 26px 0 40px; color: var(--muted); font-size: 14px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+    footer a { text-decoration: none; } footer a:hover { color: var(--text); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <nav>
+      <a class="brand" href="./"><img src="logo.svg" alt="">Vitreus</a>
+      <div class="links">
+        <a href="https://github.com/Nominy/vitreus#keys-and-mouse">Keys</a>
+        <a href="https://github.com/Nominy/vitreus/releases">Releases</a>
+        <a href="https://github.com/Nominy/vitreus">GitHub</a>
+      </div>
+    </nav>
+
+    <header>
+      <img class="mark" src="logo.svg" alt="Vitreus logo">
+      <h1>Photos, <span>instantly.</span></h1>
+      <p class="lede">A fast, no-nonsense photo viewer. Double-click a photo and it opens over your dimmed desktop with the whole folder underneath. Hold <kbd>→</kbd> to fly through it. <kbd>Esc</kbd> and it's gone.</p>
+
+      <div class="install">
+        <div class="tabs" role="tablist">
+          <button role="tab" id="tab-unix" aria-selected="true">macOS &amp; Linux</button>
+          <button role="tab" id="tab-win" aria-selected="false">Windows</button>
+        </div>
+        <div class="cmd" id="cmd">
+          <code id="cmd-text">curl -fsSL https://nominy.github.io/vitreus/install | sh</code>
+          <button class="copy" id="copy">Copy</button>
+        </div>
+        <p class="hint">One script: downloads the latest release, checks its checksum, installs without admin rights and makes Vitreus your photo viewer. <a href="https://github.com/Nominy/vitreus#install">Options &amp; uninstall</a></p>
+      </div>
+    </header>
+
+    <section class="shot"><img src="screenshot.jpg" alt="Vitreus showing a photo of Yosemite with the folder's film strip underneath" width="2000" height="1240"></section>
+
+    <section class="grid">
+      <div class="card"><h3>Instant</h3><p>Opens in a blink, shows the camera's embedded preview within milliseconds, then the full image.</p></div>
+      <div class="card"><h3>Fly-through</h3><p>Hold an arrow key and glide through thousands of photos. Neighbours are decoded ahead of you.</p></div>
+      <div class="card"><h3>Sharp at every zoom</h3><p>Screen-sized decode for viewing, full resolution the moment you zoom past it. Zoom stops at fit and 100%.</p></div>
+      <div class="card"><h3>Everything you shoot</h3><p>JPEG, HEIC, AVIF, JPEG XL, camera RAW (CR3, NEF, ARW, DNG, RAF and more), PSD, PNG, animated GIF/WebP/APNG, TIFF, SVG and more.</p></div>
+      <div class="card"><h3>Hands off your files</h3><p>Rotation is view-only. No library, no import, no account, no telemetry. Delete goes to the trash.</p></div>
+      <div class="card"><h3>Native everywhere</h3><p>One GPU-accelerated Rust binary for Windows, macOS and Linux, built on <a href="https://gpui.rs">GPUI</a>.</p></div>
+    </section>
+
+    <div class="keys">
+      <span><kbd>← →</kbd>browse</span>
+      <span><kbd>wheel</kbd>zoom</span>
+      <span><kbd>F</kbd>fit</span>
+      <span><kbd>A</kbd>100%</span>
+      <span><kbd>L</kbd><kbd>R</kbd>rotate</span>
+      <span><kbd>I</kbd>info</span>
+      <span><kbd>F11</kbd>full screen</span>
+      <span><kbd>Del</kbd>trash</span>
+      <span><kbd>Esc</kbd>close</span>
+    </div>
+
+    <footer>
+      <span>Vitreus · MIT licensed · inspired by Picasa Photo Viewer and FlyPhotos</span>
+      <a href="https://github.com/Nominy/vitreus">github.com/Nominy/vitreus</a>
+    </footer>
+  </div>
+
+  <script>
+    const commands = {
+      unix: { text: "curl -fsSL https://nominy.github.io/vitreus/install | sh", ps: false },
+      win: { text: "irm https://nominy.github.io/vitreus/install.ps1 | iex", ps: true },
+    };
+    const cmd = document.getElementById("cmd");
+    const text = document.getElementById("cmd-text");
+    function select(which) {
+      text.textContent = commands[which].text;
+      cmd.classList.toggle("ps", commands[which].ps);
+      for (const id of ["unix", "win"]) {
+        document.getElementById("tab-" + id).setAttribute("aria-selected", String(id === which));
+      }
+    }
+    document.getElementById("tab-unix").onclick = () => select("unix");
+    document.getElementById("tab-win").onclick = () => select("win");
+    if (/Win/.test(navigator.userAgentData?.platform ?? navigator.platform)) select("win");
+    const copy = document.getElementById("copy");
+    copy.onclick = async () => {
+      await navigator.clipboard.writeText(text.textContent);
+      copy.textContent = "Copied";
+      setTimeout(() => (copy.textContent = "Copy"), 1400);
+    };
+  </script>
+</body>
+</html>

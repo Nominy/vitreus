@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- Vitreus: a brilliant-cut gem seen from above, its facets twisted into a camera iris.
+       Flat celeste fills only, no outlines, transparent background, sharp corners.
+       Geometry: pointy-top hexagon tilted -10.54 deg (so the innermost hexagon sits upright); table at 42% of
+       the rim, twisted 21.3 deg so every table edge runs straight to a rim vertex; girdle ring at 74%;
+       inner iris pupil at 38% of the table. -->
+  <!-- backing fill: the full silhouette, so facet seams never show the background -->
+  <polygon points="420.7,21.4 891.2,187.6 982.5,678.2 603.3,1002.6 132.8,836.4 41.5,345.8" fill="#3a9fe0"/>
+  <!-- girdle: six facets between the rim and the crown -->
+  <polygon points="393.9,162.1 420.7,21.4 891.2,187.6 755.9,234.8" fill="#4aa9ea"/>
+  <polygon points="755.9,234.8 891.2,187.6 982.5,678.2 874.0,584.6" fill="#3590d6"/>
+  <polygon points="874.0,584.6 982.5,678.2 603.3,1002.6 630.1,861.9" fill="#1f69a8"/>
+  <polygon points="630.1,861.9 603.3,1002.6 132.8,836.4 268.1,789.2" fill="#3590d6"/>
+  <polygon points="268.1,789.2 132.8,836.4 41.5,345.8 150.0,439.4" fill="#4aa9ea"/>
+  <polygon points="150.0,439.4 41.5,345.8 420.7,21.4 393.9,162.1" fill="#78c4f2"/>
+  <!-- crown: six blades; each table edge continues as the blade's long edge to a rim vertex -->
+  <polygon points="353.3,375.1 393.9,162.1 755.9,234.8 551.2,306.1" fill="#95d4f8"/>
+  <polygon points="551.2,306.1 755.9,234.8 874.0,584.6 709.9,443.0" fill="#5db2ea"/>
+  <polygon points="709.9,443.0 874.0,584.6 630.1,861.9 670.7,648.9" fill="#3a9fe0"/>
+  <polygon points="670.7,648.9 630.1,861.9 268.1,789.2 472.8,717.9" fill="#78c4f2"/>
+  <polygon points="472.8,717.9 268.1,789.2 150.0,439.4 314.1,581.0" fill="#b3e3fd"/>
+  <polygon points="314.1,581.0 150.0,439.4 393.9,162.1 353.3,375.1" fill="#e4f6ff"/>
+  <!-- table (lens) -->
+  <polygon points="551.2,306.1 709.9,443.0 670.7,648.9 472.8,717.9 314.1,581.0 353.3,375.1" fill="#1f69a8"/>
+  <!-- aperture seen through the glass: a second, smaller set of blades closing on the pupil -->
+  <polygon points="472.2,443.0 551.2,306.1 709.9,443.0 551.8,443.0" fill="#3590d6"/>
+  <polygon points="551.8,443.0 709.9,443.0 670.7,648.9 591.6,512.0" fill="#2675bb"/>
+  <polygon points="591.6,512.0 670.7,648.9 472.8,717.9 551.8,581.0" fill="#2d82c8"/>
+  <polygon points="551.8,581.0 472.8,717.9 314.1,581.0 472.2,581.0" fill="#3a9fe0"/>
+  <polygon points="472.2,581.0 314.1,581.0 353.3,375.1 432.4,512.0" fill="#5db2ea"/>
+  <polygon points="432.4,512.0 353.3,375.1 551.2,306.1 472.2,443.0" fill="#4aa9ea"/>
+  <polygon points="551.8,443.0 591.6,512.0 551.8,581.0 472.2,581.0 432.4,512.0 472.2,443.0" fill="#1f69a8"/>
+</svg>

@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- Vitreus file type: a framed landscape in the same flat celeste. Not the app mark. -->
+  <g>
+    <polygon points="20.0,40.0 236.0,40.0 220.0,56.0 36.0,56.0" fill="#3a9fe0"/>
+    <polygon points="20.0,40.0 36.0,56.0 36.0,200.0 20.0,216.0" fill="#3a9fe0"/>
+    <polygon points="236.0,40.0 236.0,216.0 220.0,200.0 220.0,56.0" fill="#2675bb"/>
+    <polygon points="20.0,216.0 36.0,200.0 220.0,200.0 236.0,216.0" fill="#2675bb"/>
+    <rect x="36" y="56" width="184" height="144" fill="#cdeeff"/>
+    <polygon points="182.0,70.0 195.9,78.0 195.9,94.0 182.0,102.0 168.1,94.0 168.1,78.0" fill="#ffffff"/>
+    <polygon points="126.0,200.0 178.0,132.0 190.0,200.0" fill="#78c4f2"/>
+    <polygon points="178.0,132.0 220.0,176.0 220.0,200.0 190.0,200.0" fill="#3590d6"/>
+    <polygon points="36.0,172.0 104.0,104.0 118.0,200.0 36.0,200.0" fill="#8fd3fb"/>
+    <polygon points="104.0,104.0 186.0,200.0 118.0,200.0" fill="#4aa9ea"/>
+    </g>
+</svg>
