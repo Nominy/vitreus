@@ -163,7 +163,7 @@ On macOS <kbd>Ctrl</kbd> is <kbd>Cmd</kbd>.
 - **Others:** Photoshop PSD/PSB (the flattened image), SVG, ICO, TGA, QOI, PNM,
   HDR, OpenEXR, DDS, farbfeld.
 
-HEIC and AVIF use the system's decoder: on Windows the free *HEIF Image
+HEIC and AVIF use the system's decoder: on Windows the *HEIF Image
 Extensions*, *HEVC Video Extensions* and *AV1 Video Extension* from the Microsoft
 Store (Vitreus tells you if one is missing), ImageIO on macOS and `libheif` on Linux.
 

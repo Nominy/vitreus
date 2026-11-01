@@ -29,7 +29,13 @@ jobs:
       url: ${{ steps.deploy.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+      # The site's real address: nominy.github.io/vitreus, or the account's
+      # custom domain when it has one. Canonical/OG/sitemap URLs must use it.
+      - id: pages
+        uses: actions/configure-pages@v5
       - name: Assemble site
+        env:
+          SITE_URL: ${{ steps.pages.outputs.base_url }}
         run: |
           mkdir _site
           cp -R site/. _site/
@@ -38,7 +44,9 @@ jobs:
           cp install.ps1 _site/install.ps1
           cp assets/brand/vitreus-mark.svg _site/logo.svg
           cp assets/app/vitreus-256.png _site/icon.png
-      - uses: actions/configure-pages@v5
+          lastmod="$(date -u +%F)"
+          sed -i -e "s#__SITE_URL__#${SITE_URL%/}#g" -e "s#__LASTMOD__#$lastmod#g" _site/index.html _site/sitemap.xml
+          ! grep -rl "__SITE_URL__\|__LASTMOD__" _site
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site

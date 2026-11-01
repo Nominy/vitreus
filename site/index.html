@@ -3,15 +3,46 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Vitreus — a fast, no-nonsense photo viewer</title>
-  <meta name="description" content="Vitreus is a fast, no-nonsense photo viewer for Windows, macOS and Linux. Double-click a photo, flick through the folder, press Esc. Free and open source.">
+  <title>Vitreus — Fast, Free Photo Viewer for Windows, macOS &amp; Linux</title>
+  <meta name="description" content="Free, open-source photo viewer for Windows, macOS and Linux. Opens JPEG, HEIC, JPEG XL, RAW and PSD instantly. A modern Picasa Photo Viewer alternative.">
+  <link rel="canonical" href="__SITE_URL__/">
   <meta name="theme-color" content="#0b1a2a">
-  <meta property="og:title" content="Vitreus — a fast, no-nonsense photo viewer">
-  <meta property="og:description" content="Double-click a photo, flick through the folder, press Esc. Windows, macOS and Linux.">
-  <meta property="og:image" content="https://nominy.github.io/vitreus/screenshot.jpg">
-  <meta property="og:url" content="https://nominy.github.io/vitreus/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Vitreus">
+  <meta property="og:title" content="Vitreus — a fast, free photo viewer">
+  <meta property="og:description" content="Double-click a photo, fly through the folder, press Esc. Free and open source for Windows, macOS and Linux.">
+  <meta property="og:url" content="__SITE_URL__/">
+  <meta property="og:image" content="__SITE_URL__/screenshot.jpg">
+  <meta property="og:image:width" content="2000">
+  <meta property="og:image:height" content="1240">
+  <meta property="og:image:alt" content="Vitreus showing a landscape photo with the folder's film strip underneath">
   <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Vitreus — a fast, free photo viewer">
+  <meta name="twitter:description" content="Double-click a photo, fly through the folder, press Esc. Windows, macOS and Linux.">
+  <meta name="twitter:image" content="__SITE_URL__/screenshot.jpg">
   <link rel="icon" href="icon.png">
+  <link rel="apple-touch-icon" href="icon.png">
+  <link rel="preload" href="fonts/Sora.woff2" as="font" type="font/woff2" crossorigin>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Vitreus",
+    "description": "A fast, free and open-source photo viewer for Windows, macOS and Linux that opens JPEG, HEIC, AVIF, JPEG XL, camera RAW and PSD files instantly.",
+    "url": "__SITE_URL__/",
+    "image": "__SITE_URL__/icon.png",
+    "screenshot": "__SITE_URL__/screenshot.jpg",
+    "applicationCategory": "MultimediaApplication",
+    "applicationSubCategory": "Photo viewer",
+    "operatingSystem": "Windows 10, Windows 11, macOS, Linux",
+    "downloadUrl": "https://github.com/Nominy/vitreus/releases/latest",
+    "license": "https://opensource.org/licenses/MIT",
+    "isAccessibleForFree": true,
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+    "author": { "@type": "Person", "name": "Nominy", "url": "https://github.com/Nominy" },
+    "sameAs": ["https://github.com/Nominy/vitreus"]
+  }
+  </script>
   <style>
     :root {
       --bg: #0b1a2a; --panel: #0f2740; --line: #ffffff1a; --text: #eef7ff; --muted: #9db4c8;
@@ -19,7 +50,7 @@
       --mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
       --display: "Sora", Inter, -apple-system, "Segoe UI", system-ui, sans-serif;
     }
-    @font-face { font-family: "Sora"; src: url("fonts/Sora.ttf") format("truetype"); font-weight: 100 800; font-display: swap; }
+    @font-face { font-family: "Sora"; src: url("fonts/Sora.woff2") format("woff2"); font-weight: 100 800; font-display: swap; }
     * { box-sizing: border-box; }
     html { background: var(--bg); }
     body { margin: 0; color: var(--text); font: 16px/1.6 Inter, -apple-system, "Segoe UI", system-ui, sans-serif; background: var(--bg); min-height: 100vh; }
@@ -36,6 +67,8 @@
     h1 { font-family: var(--display); font-size: clamp(40px, 6vw, 68px); line-height: 1.04; margin: 26px 0 14px; letter-spacing: -2px; font-weight: 600; }
     h1 span { color: var(--celeste); }
     .lede { color: var(--muted); font-size: 19px; max-width: 640px; margin: 0 auto; }
+    .kicker { margin: 22px 0 0; color: var(--celeste); font: 600 13px var(--display); letter-spacing: 1.6px; text-transform: uppercase; }
+    header h1 { margin-top: 10px; }
 
     .install { max-width: 680px; margin: 38px auto 0; }
     .tabs { display: inline-flex; gap: 4px; padding: 4px; background: var(--panel); border: 1px solid var(--line); margin-bottom: 10px; }
@@ -65,21 +98,37 @@
 
     footer { border-top: 1px solid var(--line); padding: 26px 0 40px; color: var(--muted); font-size: 14px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
     footer a { text-decoration: none; } footer a:hover { color: var(--text); }
+
+    h2 { font: 600 clamp(24px, 3vw, 30px)/1.2 var(--display); letter-spacing: -.6px; margin: 0 0 8px; }
+    .sub { color: var(--muted); margin: 0 0 22px; max-width: 680px; }
+    section.block { margin: 0 0 80px; }
+    .formats { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; }
+    .formats p { line-height: 1.75; }
+    .faq details { background: var(--panel); border: 1px solid var(--line); margin-bottom: 8px; }
+    .faq summary { cursor: pointer; padding: 15px 20px; font: 600 16px var(--display); list-style: none; display: flex; justify-content: space-between; gap: 16px; }
+    .faq summary::-webkit-details-marker { display: none; }
+    .faq summary::after { content: "+"; color: var(--celeste); font-weight: 400; }
+    .faq details[open] summary::after { content: "−"; }
+    .faq details p { margin: 0; padding: 0 20px 18px; color: var(--muted); }
+    .faq code { font: 13px var(--mono); color: var(--text); background: #ffffff10; padding: 1px 6px; }
+    .faq a, .sub a { color: var(--celeste); text-decoration: none; }
   </style>
 </head>
 <body>
   <div class="wrap">
     <nav>
-      <a class="brand" href="./"><img src="logo.svg" alt="">Vitreus</a>
+      <a class="brand" href="./"><img src="logo.svg" alt="" width="26" height="26">Vitreus</a>
       <div class="links">
+        <a href="#formats">Formats</a>
+        <a href="#faq">FAQ</a>
         <a href="https://github.com/Nominy/vitreus#usage">Keys</a>
-        <a href="https://github.com/Nominy/vitreus/releases">Releases</a>
         <a href="https://github.com/Nominy/vitreus">GitHub</a>
       </div>
     </nav>
 
     <header>
-      <img class="mark" src="logo.svg" alt="Vitreus logo">
+      <img class="mark" src="logo.svg" alt="Vitreus logo" width="104" height="104">
+      <p class="kicker">Free, open-source photo viewer for Windows, macOS &amp; Linux</p>
       <h1>Photos, <span>instantly.</span></h1>
       <p class="lede">A fast, no-nonsense photo viewer. Double-click a photo and it opens over your dimmed desktop with the whole folder underneath. Hold <kbd>→</kbd> to fly through it. <kbd>Esc</kbd> and it's gone.</p>
 
@@ -92,13 +141,15 @@
           <code id="cmd-text">curl -fsSL https://nominy.github.io/vitreus/install | sh</code>
           <button class="copy" id="copy">Copy</button>
         </div>
-        <p class="hint">One script: downloads the latest release, checks its checksum, installs without admin rights and makes Vitreus your photo viewer. <a href="https://github.com/Nominy/vitreus#install">Options &amp; uninstall</a></p>
+        <p class="hint">One script: downloads the latest release, checks its checksum, installs without admin rights and makes Vitreus your photo viewer. Also on <a href="https://github.com/Nominy/scoop-bucket">Scoop</a> and <a href="https://github.com/Nominy/homebrew-tap">Homebrew</a>. <a href="https://github.com/Nominy/vitreus#install">Options &amp; uninstall</a></p>
       </div>
     </header>
 
-    <section class="shot"><img src="screenshot.jpg" alt="Vitreus showing a photo of Yosemite with the folder's film strip underneath" width="2000" height="1240"></section>
+    <section class="shot"><picture><source srcset="screenshot.webp" type="image/webp"><img src="screenshot.jpg" alt="Vitreus photo viewer showing a landscape photo with the folder's film strip underneath" width="2000" height="1240" fetchpriority="high"></picture></section>
 
-    <section class="grid">
+    <h2 id="features" style="margin-top: 80px">Why Vitreus</h2>
+    <p class="sub">The quick viewer from Picasa, rebuilt from scratch for today's cameras and screens.</p>
+    <section class="grid" style="margin-top: 0">
       <div class="card"><h3>Instant</h3><p>Opens in a blink, shows the camera's embedded preview within milliseconds, then the full image.</p></div>
       <div class="card"><h3>Fly-through</h3><p>Hold an arrow key and glide through thousands of photos. Neighbours are decoded ahead of you.</p></div>
       <div class="card"><h3>Sharp at every zoom</h3><p>Screen-sized decode for viewing, full resolution the moment you zoom past it. Zoom stops at fit and 100%.</p></div>
@@ -119,9 +170,52 @@
       <span><kbd>Esc</kbd>close</span>
     </div>
 
+    <section class="block" id="formats">
+      <h2>Opens every photo format</h2>
+      <p class="sub">Phone photos, camera RAW files and design files all open the same way: double-click.</p>
+      <div class="formats">
+        <div class="card"><h3>Photos</h3><p>JPEG, HEIC / HEIF, AVIF, JPEG XL, PNG and APNG, GIF, WebP (animated too), TIFF, BMP.</p></div>
+        <div class="card"><h3>Camera RAW</h3><p>Canon CR2 &amp; CR3, Nikon NEF &amp; NRW, Sony ARW, SRF &amp; SR2, Adobe DNG, Fujifilm RAF, Olympus ORF, Panasonic RW2, Pentax PEF, Samsung SRW, Leica RAW &amp; RWL, Hasselblad 3FR, Phase One IIQ, Sigma X3F.</p></div>
+        <div class="card"><h3>Design &amp; more</h3><p>Photoshop PSD &amp; PSB, SVG, ICO, TGA, QOI, PNM, Radiance HDR, OpenEXR, DDS, farbfeld.</p></div>
+      </div>
+    </section>
+
+    <section class="block faq" id="faq">
+      <h2>Questions</h2>
+      <p class="sub">Anything else? <a href="https://github.com/Nominy/vitreus/issues">Open an issue on GitHub</a>.</p>
+      <details>
+        <summary>Is Vitreus free?</summary>
+        <p>Yes. Vitreus is free and open source under the MIT license, with no ads, no account and no telemetry. The only thing it ever downloads on its own is a tiny file from GitHub to check for updates, and you can turn that off in Settings.</p>
+      </details>
+      <details>
+        <summary>Is it a replacement for Picasa Photo Viewer?</summary>
+        <p>That's what it was made for. Google discontinued Picasa in 2016; Vitreus brings back its photo viewer: the photo opens over your dimmed desktop with the folder in a film strip underneath, and a click outside closes it. It adds what Picasa never had: HEIC, AVIF, JPEG XL, modern camera RAW and high-DPI screens.</p>
+      </details>
+      <details>
+        <summary>How do I open HEIC photos on Windows?</summary>
+        <p>Vitreus uses Windows' own HEIC decoder, which comes from the <em>HEIF Image Extensions</em> and <em>HEVC Video Extensions</em> in the Microsoft Store (<em>AV1 Video Extension</em> for AVIF). If one is missing, Vitreus tells you which. On macOS HEIC works out of the box; on Linux install <code>libheif</code>.</p>
+      </details>
+      <details>
+        <summary>Can it show camera RAW files?</summary>
+        <p>Yes: CR3, CR2, NEF, ARW, DNG, RAF, ORF, RW2 and more. Vitreus shows the full-size JPEG preview your camera stores inside every RAW file, so RAW photos open as fast as JPEGs and look like they did on the camera's screen. It doesn't develop the raw sensor data.</p>
+      </details>
+      <details>
+        <summary>Will it change my photos?</summary>
+        <p>Never. Rotating is for viewing only and nothing is written back to your files. Deleting moves a photo to the Recycle Bin or Trash, so it can always be restored.</p>
+      </details>
+      <details>
+        <summary>How do I make Vitreus my default photo viewer?</summary>
+        <p>The installer does it on macOS and Linux. Windows doesn't let apps change defaults themselves, so the installer opens <em>Settings → Default apps</em> on Vitreus: click <em>Set default</em>. Installed another way? Run <code>vitreus --register</code> once.</p>
+      </details>
+      <details>
+        <summary>How do I uninstall it?</summary>
+        <p>On Windows use <em>Settings → Apps → Vitreus → Uninstall</em>. On macOS and Linux run <code>curl -fsSL https://nominy.github.io/vitreus/install | sh -s -- --uninstall</code>.</p>
+      </details>
+    </section>
+
     <footer>
-      <span>Vitreus · MIT licensed · inspired by Picasa Photo Viewer and FlyPhotos</span>
-      <a href="https://github.com/Nominy/vitreus">github.com/Nominy/vitreus</a>
+      <span>Vitreus · free and open source (MIT) · inspired by Picasa Photo Viewer and FlyPhotos</span>
+      <span><a href="https://github.com/Nominy/vitreus/releases">Download</a> · <a href="https://github.com/Nominy/vitreus">GitHub</a></span>
     </footer>
   </div>
 
