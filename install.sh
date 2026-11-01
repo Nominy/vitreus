@@ -138,7 +138,8 @@ fetch_release() {
 # Builds from this checkout (when the script is run from one) or a fresh clone.
 build_from_source() {
     has cargo || die "Building needs Rust:  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh"
-    here="$(cd "$(dirname "$0")" 2>/dev/null && pwd || true)"
+    here=""
+    if dir="$(cd "$(dirname "$0")" 2>/dev/null && pwd)"; then here="$dir"; fi
     if [ -n "$here" ] && [ -f "$here/Cargo.toml" ] && [ -f "$here/scripts/package.sh" ]; then
         src="$here"
     else
