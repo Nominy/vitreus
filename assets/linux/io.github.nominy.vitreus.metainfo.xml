@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.nominy.vitreus</id>
+  <name>Vitreus</name>
+  <summary>Fast, no-nonsense photo viewer</summary>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+  <developer id="io.github.nominy">
+    <name>Nominy</name>
+  </developer>
+  <description>
+    <p>
+      Vitreus opens a photo over your dimmed desktop with the rest of the folder
+      in a film strip underneath. Hold an arrow key to fly through hundreds of
+      photos; click outside or press Esc and it's gone. No library, no import,
+      no account: just a viewer, in the spirit of Picasa Photo Viewer.
+    </p>
+    <p>
+      It opens JPEG, HEIC, AVIF, JPEG XL, camera RAW (CR3, NEF, ARW, DNG, RAF and
+      more), Photoshop PSD, PNG, animated GIF and WebP, TIFF, SVG and more.
+    </p>
+  </description>
+  <launchable type="desktop-id">vitreus.desktop</launchable>
+  <url type="homepage">https://nominy.github.io/vitreus</url>
+  <url type="bugtracker">https://github.com/Nominy/vitreus/issues</url>
+  <url type="vcs-browser">https://github.com/Nominy/vitreus</url>
+  <screenshots>
+    <screenshot type="default">
+      <image>https://raw.githubusercontent.com/Nominy/vitreus/main/site/screenshot.jpg</image>
+      <caption>A photo with the folder's film strip underneath</caption>
+    </screenshot>
+  </screenshots>
+  <categories>
+    <category>Graphics</category>
+    <category>Viewer</category>
+    <category>Photography</category>
+  </categories>
+  <content_rating type="oars-1.1"/>
+  <provides>
+    <binary>vitreus</binary>
+  </provides>
+</component>

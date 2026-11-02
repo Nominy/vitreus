@@ -4,9 +4,13 @@
 #   scripts/package.sh <linux|macos|windows> <x64|arm64> <binary> <out-dir>
 #
 # linux   -> vitreus-linux-<arch>.tar.gz   (vitreus, vitreus.png, LICENSE)
+#            vitreus-linux-<arch>.deb/.rpm (when nfpm is installed)
 # macos   -> vitreus-macos-<arch>.tar.gz   (Vitreus.app, ad-hoc signed)
+#            vitreus-macos-<arch>.dmg      (drag-to-Applications disk image)
 # windows -> vitreus-windows-<arch>.zip    (vitreus.exe, LICENSE)
-# Prints the archive path.
+#            vitreus-setup-<arch>.exe      (when Inno Setup's iscc is installed;
+#                                           set ISCC=path\to\ISCC.exe if not on PATH)
+# Prints the path of each file it made.
 set -eu
 
 [ $# -eq 4 ] || { echo "usage: $0 <linux|macos|windows> <x64|arm64> <binary> <out-dir>" >&2; exit 2; }
@@ -19,6 +23,11 @@ trap 'rm -rf "$stage"' EXIT
 mkdir -p "$out"
 out="$(cd "$out" && pwd)"
 
+# Windows tools want C:\ paths, not the /c/... ones of Git Bash.
+native() {
+    if command -v cygpath >/dev/null 2>&1; then cygpath -w "$1"; else echo "$1"; fi
+}
+
 case "$os" in
     linux)
         install -m 755 "$bin" "$stage/vitreus"
@@ -26,6 +35,17 @@ case "$os" in
         cp "$root/LICENSE" "$stage/LICENSE"
         tar -czf "$out/$name.tar.gz" -C "$stage" vitreus vitreus.png LICENSE
         echo "$out/$name.tar.gz"
+        if command -v nfpm >/dev/null 2>&1; then
+            case "$arch" in x64) pkg_arch=amd64 ;; *) pkg_arch="$arch" ;; esac
+            sed -e "s|@VERSION@|$version|; s|@ARCH@|$pkg_arch|; s|@BINARY@|$stage/vitreus|; s|@ROOT@|$root|g" \
+                "$root/assets/linux/nfpm.yaml" >"$stage/nfpm.yaml"
+            for kind in deb rpm; do
+                nfpm package --config "$stage/nfpm.yaml" --packager "$kind" --target "$out/$name.$kind" >/dev/null
+                echo "$out/$name.$kind"
+            done
+        else
+            echo "note: nfpm not found, skipping $name.deb and $name.rpm" >&2
+        fi
         ;;
     macos)
         app="$stage/Vitreus.app"
@@ -44,6 +64,14 @@ case "$os" in
         codesign --force --deep --sign - "$app"
         tar -czf "$out/$name.tar.gz" -C "$stage" Vitreus.app
         echo "$out/$name.tar.gz"
+        # Drag-to-Applications disk image.
+        dmg="$stage/dmg"
+        mkdir -p "$dmg"
+        cp -R "$app" "$dmg/"
+        ln -s /Applications "$dmg/Applications"
+        rm -f "$out/$name.dmg"
+        hdiutil create -quiet -volname Vitreus -srcfolder "$dmg" -fs HFS+ -format UDZO "$out/$name.dmg"
+        echo "$out/$name.dmg"
         ;;
     windows)
         cp "$bin" "$stage/vitreus.exe"
@@ -51,6 +79,16 @@ case "$os" in
         rm -f "$out/$name.zip"
         (cd "$stage" && 7z a -tzip "$out/$name.zip" vitreus.exe LICENSE >/dev/null)
         echo "$out/$name.zip"
+        iscc="${ISCC:-$(command -v iscc || command -v ISCC.exe || true)}"
+        if [ -n "$iscc" ] && command -v cygpath >/dev/null 2>&1; then iscc="$(cygpath -u "$iscc")"; fi
+        if [ -n "$iscc" ]; then
+            # MSYS would rewrite iscc's /D... switches as if they were paths.
+            MSYS2_ARG_CONV_EXCL='*' "$iscc" /Q "/DAppVersion=$version" "/DBinary=$(native "$stage/vitreus.exe")" \
+                "/DRoot=$(native "$root")" "/O$(native "$out")" "$(native "$root/assets/windows/vitreus.iss")"
+            echo "$out/vitreus-setup-$arch.exe"
+        else
+            echo "note: Inno Setup (iscc) not found, skipping vitreus-setup-$arch.exe" >&2
+        fi
         ;;
     *)
         echo "unknown os: $os" >&2

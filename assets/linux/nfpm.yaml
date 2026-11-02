@@ -1,0 +1,71 @@
+# .deb and .rpm for Vitreus: scripts/package.sh fills in the @PLACEHOLDERS@
+# and runs nfpm (https://nfpm.goreleaser.com).
+name: vitreus
+version: @VERSION@
+arch: @ARCH@
+platform: linux
+section: graphics
+priority: optional
+maintainer: Nominy <39337311+Nominy@users.noreply.github.com>
+vendor: Nominy
+homepage: https://nominy.github.io/vitreus
+license: MIT
+description: |-
+  Fast, no-nonsense photo viewer.
+  Opens a photo over your dimmed desktop with the folder in a film strip
+  underneath. JPEG, HEIC, AVIF, JPEG XL, camera RAW, PSD, PNG, GIF, WebP,
+  TIFF, SVG and more.
+
+contents:
+  - src: @BINARY@
+    dst: /usr/bin/vitreus
+    file_info: { mode: 0755 }
+  - src: @ROOT@/assets/linux/vitreus.desktop
+    dst: /usr/share/applications/vitreus.desktop
+    file_info: { mode: 0644 }
+  - src: @ROOT@/assets/linux/io.github.nominy.vitreus.metainfo.xml
+    dst: /usr/share/metainfo/io.github.nominy.vitreus.metainfo.xml
+    file_info: { mode: 0644 }
+  - src: @ROOT@/assets/app/vitreus-256.png
+    dst: /usr/share/icons/hicolor/256x256/apps/vitreus.png
+    file_info: { mode: 0644 }
+  - src: @ROOT@/assets/brand/vitreus-icon.svg
+    dst: /usr/share/icons/hicolor/scalable/apps/vitreus.svg
+    file_info: { mode: 0644 }
+  - src: @ROOT@/LICENSE
+    dst: /usr/share/doc/vitreus/copyright
+    packager: deb
+    file_info: { mode: 0644 }
+  - src: @ROOT@/LICENSE
+    dst: /usr/share/licenses/vitreus/LICENSE
+    packager: rpm
+    type: license
+    file_info: { mode: 0644 }
+
+# The binary links xcb and xkbcommon; Vulkan, Wayland and fontconfig are
+# loaded at run time, so they're listed explicitly. libheif adds HEIC/AVIF.
+overrides:
+  deb:
+    depends:
+      - libc6
+      - libgcc-s1
+      - libxcb1
+      - libxkbcommon0
+      - libxkbcommon-x11-0
+      - libwayland-client0
+      - libvulkan1
+      - libfontconfig1
+    recommends:
+      - mesa-vulkan-drivers
+      - libheif1
+  rpm:
+    # Sonames rather than package names, so Fedora and openSUSE both resolve them.
+    depends:
+      - libxcb.so.1()(64bit)
+      - libxkbcommon.so.0()(64bit)
+      - libxkbcommon-x11.so.0()(64bit)
+      - libwayland-client.so.0()(64bit)
+      - libvulkan.so.1()(64bit)
+      - libfontconfig.so.1()(64bit)
+    recommends:
+      - libheif.so.1()(64bit)

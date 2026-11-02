@@ -45,6 +45,7 @@ function Install-Vitreus {
     $ExeName = 'vitreus.exe'
     $Repo = if ($env:VITREUS_REPO) { $env:VITREUS_REPO } else { 'Nominy/vitreus' }
     $Asset = 'vitreus-windows-x64.zip'
+    $SetupAppId = '8EF3EEE6-0F4E-4D9D-AC9C-A9893BCE66D6'   # AppId in assets/windows/vitreus.iss
 
     $machine = $Scope -eq 'Machine'
     $hive = if ($machine) { [Microsoft.Win32.Registry]::LocalMachine } else { [Microsoft.Win32.Registry]::CurrentUser }
@@ -116,6 +117,7 @@ function Install-Vitreus {
         Stop-Running
         if (Test-Path $exe) { Invoke-Registration '--unregister' }
         $hive.DeleteSubKeyTree($uninstallKey, $false)
+        $hive.DeleteSubKeyTree("Software\Microsoft\Windows\CurrentVersion\Uninstall\{$SetupAppId}_is1", $false)
         Set-PathEntry $false
         if (Test-Path $shortcut) { Remove-Item -Force $shortcut }
         if (Test-Path $installDir) { Remove-Item -Recurse -Force $installDir }
@@ -192,6 +194,10 @@ function Install-Vitreus {
         }
         Invoke-Registration '--register'
         Register-Uninstaller $installedVersion
+        # Installed over a copy from Vitreus Setup: this script owns the folder now,
+        # so drop Setup's "Apps & features" entry and uninstaller.
+        $hive.DeleteSubKeyTree("Software\Microsoft\Windows\CurrentVersion\Uninstall\{$SetupAppId}_is1", $false)
+        Get-ChildItem -Path $installDir -Filter 'unins*' -ErrorAction SilentlyContinue | Remove-Item -Force
         Set-PathEntry $true
 
         New-Item -ItemType Directory -Force -Path $startMenu | Out-Null

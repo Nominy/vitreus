@@ -43,6 +43,16 @@ jobs:
         run: |
           shellcheck -s sh install.sh scripts/package.sh
           dash -n install.sh
+      - name: Linux desktop entry and metadata
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq desktop-file-utils appstream >/dev/null
+          desktop-file-validate assets/linux/vitreus.desktop
+          appstreamcli validate --no-net assets/linux/io.github.nominy.vitreus.metainfo.xml
+          # The packaged entry and install.sh's must offer the same types.
+          eval "$(grep -E '^LINUX_(RAW_)?MIMES=' install.sh)"
+          if [ "MimeType=$LINUX_MIMES" != "$(grep '^MimeType=' assets/linux/vitreus.desktop)" ]; then
+            echo "::error::MimeType in assets/linux/vitreus.desktop differs from install.sh"; exit 1
+          fi
       - name: PowerShell script
         shell: pwsh
         run: |

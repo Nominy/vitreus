@@ -3,7 +3,8 @@
 //! On launch a background thread asks GitHub for the latest release (at most
 //! every few hours; results are cached), unless updates are turned off or the
 //! user skipped that version. Updating hands off to whatever installed
-//! Vitreus (install script, Scoop, winget, Homebrew), then reopens the photo.
+//! Vitreus (Setup, install script, Scoop, winget, Homebrew, apt/dnf/zypper),
+//! then reopens the photo.
 
 use std::{
     path::Path,
@@ -18,8 +19,13 @@ use anyhow::{Context as _, Result};
 pub const CURRENT: &str = env!("CARGO_PKG_VERSION");
 pub const RELEASES_URL: &str = "https://github.com/Nominy/vitreus/releases/latest";
 const LATEST_URL: &str = "https://github.com/Nominy/vitreus/releases/latest/download/latest.json";
+#[cfg(not(target_os = "macos"))]
+const DOWNLOAD_BASE: &str = "https://github.com/Nominy/vitreus/releases/latest/download";
 const INSTALL_SITE: &str = "https://nominy.github.io/vitreus";
 const CHECK_EVERY_SECS: u64 = 6 * 60 * 60;
+/// Inno Setup AppId of Vitreus Setup (assets/windows/vitreus.iss).
+#[cfg(windows)]
+const SETUP_APP_ID: &str = "8EF3EEE6-0F4E-4D9D-AC9C-A9893BCE66D6";
 
 // ------------------------------------------------------------------- state
 
@@ -178,6 +184,15 @@ fn install_url(file: &str) -> String {
     format!("{}/{file}", base.trim_end_matches('/'))
 }
 
+/// Where release files are downloaded from (`VITREUS_DOWNLOAD_URL` overrides,
+/// like for the install scripts).
+#[cfg(not(target_os = "macos"))]
+fn download_base() -> String {
+    std::env::var("VITREUS_DOWNLOAD_URL")
+        .map(|base| base.trim_end_matches('/').to_owned())
+        .unwrap_or_else(|_| DOWNLOAD_BASE.to_owned())
+}
+
 pub fn action() -> Action {
     let Ok(exe) = std::env::current_exe() else {
         return Action::Open(RELEASES_URL);
@@ -199,6 +214,32 @@ fn detect(exe: &Path) -> Action {
             commands: "scoop update vitreus".into(),
             elevated: false,
             relaunch: "'vitreus'".into(),
+        })
+    } else if exe.parent().is_some_and(|dir| dir.join("unins000.exe").exists()) {
+        // Installed by Vitreus Setup: run the new Setup silently in the same mode.
+        let machine = windows_registry::LOCAL_MACHINE
+            .open(format!(
+                "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\{{{SETUP_APP_ID}}}_is1"
+            ))
+            .is_ok();
+        let mode = if machine { "/ALLUSERS" } else { "/CURRENTUSER" };
+        Action::Run(Updater::PowerShell {
+            commands: format!(
+                "$ProgressPreference = 'SilentlyContinue'\n\
+                 $base = {base}\n\
+                 $setup = Join-Path $env:TEMP 'vitreus-setup-x64.exe'\n\
+                 $sums = Join-Path $env:TEMP 'vitreus-SHA256SUMS'\n\
+                 Invoke-WebRequest -UseBasicParsing -Uri \"$base/vitreus-setup-x64.exe\" -OutFile $setup\n\
+                 Invoke-WebRequest -UseBasicParsing -Uri \"$base/SHA256SUMS\" -OutFile $sums\n\
+                 $line = Get-Content $sums | Where-Object {{ $_ -match '\\s\\*?vitreus-setup-x64\\.exe$' }} | Select-Object -First 1\n\
+                 if (-not $line -or (($line -split '\\s+')[0] -ne (Get-FileHash -Algorithm SHA256 $setup).Hash)) {{ throw 'The downloaded Setup does not match SHA256SUMS.' }}\n\
+                 $p = Start-Process -FilePath $setup -Wait -PassThru -ArgumentList '/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART','{mode}'\n\
+                 Remove-Item $setup, $sums -ErrorAction SilentlyContinue\n\
+                 if ($p.ExitCode) {{ throw \"Setup exited with $($p.ExitCode)\" }}",
+                base = ps_quote(&download_base()),
+            ),
+            elevated: false,
+            relaunch: quoted,
         })
     } else if path.contains("\\microsoft\\winget\\") {
         Action::Run(Updater::PowerShell {
@@ -253,9 +294,59 @@ fn detect(exe: &Path) -> Action {
             "curl -fsSL {} | sh -s -- --system",
             install_url("install")
         ))
+    } else if exe == Path::new("/usr/bin/vitreus") {
+        package_update().unwrap_or(Action::Open(RELEASES_URL))
     } else {
         Action::Open(RELEASES_URL)
     }
+}
+
+/// Installed from the .deb or .rpm: download the new package, check it against
+/// SHA256SUMS and install it through the package manager, asking for the
+/// password with pkexec (or hand over a sudo command when there's no pkexec).
+#[cfg(target_os = "linux")]
+fn package_update() -> Option<Action> {
+    let arch = if std::env::consts::ARCH == "aarch64" { "arm64" } else { "x64" };
+    let (kind, tool) = if Path::new("/var/lib/dpkg/info/vitreus.list").exists() {
+        ("deb", "apt-get install -y")
+    } else if on_path("dnf") {
+        ("rpm", "dnf install -y")
+    } else if on_path("zypper") {
+        ("rpm", "zypper --non-interactive install --allow-unsigned-rpm")
+    } else if on_path("rpm") {
+        ("rpm", "rpm -U")
+    } else {
+        return None;
+    };
+    let file = format!("vitreus-linux-{arch}.{kind}");
+    let base = download_base();
+    if !on_path("pkexec") {
+        return Some(Action::Copy(format!(
+            "curl -fsSLO {base}/{file} && sudo {tool} ./{file}"
+        )));
+    }
+    Some(Action::Run(Updater::Shell {
+        commands: format!(
+            "(\nset -e\ndir=\"$(mktemp -d)\"\ncd \"$dir\"\n\
+             curl -fsSLO {file_url}\ncurl -fsSLO {sums_url}\n\
+             grep ' {file}$' SHA256SUMS | sha256sum -c -\n\
+             pkexec {tool} \"$dir/{file}\"\ncd /\nrm -rf \"$dir\"\n)",
+            file_url = sh_quote(&format!("{base}/{file}")),
+            sums_url = sh_quote(&format!("{base}/SHA256SUMS")),
+        ),
+        relaunch: "/usr/bin/vitreus \"$1\" >/dev/null 2>&1 &".to_owned(),
+    }))
+}
+
+#[cfg(not(any(windows, target_os = "linux")))]
+fn package_update() -> Option<Action> {
+    None
+}
+
+#[cfg(target_os = "linux")]
+fn on_path(program: &str) -> bool {
+    std::env::var_os("PATH")
+        .is_some_and(|path| std::env::split_paths(&path).any(|dir| dir.join(program).is_file()))
 }
 
 /// Starts the updater in its own process; the caller should quit right after

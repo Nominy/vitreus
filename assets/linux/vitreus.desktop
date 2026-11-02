@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=Vitreus
+GenericName=Photo Viewer
+Comment=Fast, no-nonsense photo viewer
+Exec=vitreus %f
+Icon=vitreus
+Terminal=false
+Categories=Graphics;Viewer;Photography;
+Keywords=photo;image;picture;viewer;heic;raw;jxl;
+MimeType=image/jpeg;image/png;image/apng;image/gif;image/webp;image/bmp;image/x-bmp;image/x-ms-bmp;image/tiff;image/x-icon;image/vnd.microsoft.icon;image/x-tga;image/x-targa;image/qoi;image/x-qoi;image/x-portable-anymap;image/x-portable-bitmap;image/x-portable-graymap;image/x-portable-pixmap;image/vnd.radiance;image/x-exr;image/x-dds;image/svg+xml;image/heic;image/heif;image/heic-sequence;image/heif-sequence;image/avif;image/jxl;image/vnd.adobe.photoshop;image/x-photoshop;image/x-psd;image/x-dcraw;image/x-adobe-dng;image/x-canon-cr2;image/x-canon-cr3;image/x-nikon-nef;image/x-nikon-nrw;image/x-sony-arw;image/x-sony-sr2;image/x-sony-srf;image/x-fuji-raf;image/x-olympus-orf;image/x-panasonic-rw;image/x-panasonic-rw2;image/x-pentax-pef;image/x-samsung-srw;image/x-sigma-x3f;image/x-hasselblad-3fr;image/x-phaseone-iiq;
+StartupWMClass=vitreus

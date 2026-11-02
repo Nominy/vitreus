@@ -78,6 +78,24 @@ jobs:
       - name: Build
         run: cargo build --release --locked --target ${{ matrix.target }}
 
+      - name: nfpm (builds the .deb and .rpm)
+        if: matrix.os == 'linux'
+        run: |
+          arch="$(uname -m | sed 's/aarch64/arm64/')"
+          curl -fsSL "https://github.com/goreleaser/nfpm/releases/download/v2.48.0/nfpm_2.48.0_Linux_${arch}.tar.gz" \
+            | sudo tar -xz -C /usr/local/bin nfpm
+
+      - name: Inno Setup (builds Setup.exe)
+        if: matrix.os == 'windows'
+        shell: pwsh
+        run: |
+          $installer = Join-Path $env:RUNNER_TEMP 'innosetup.exe'
+          $dir = Join-Path $env:RUNNER_TEMP 'inno'
+          Invoke-WebRequest -UseBasicParsing -OutFile $installer -Uri https://github.com/jrsoftware/issrc/releases/download/is-7_1_1/innosetup-7.1.1-x64.exe
+          $p = Start-Process $installer -Wait -PassThru -ArgumentList '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', '/CURRENTUSER', '/PORTABLE=1', "/DIR=`"$dir`""
+          if ($p.ExitCode) { throw "Inno Setup install exited with $($p.ExitCode)" }
+          "ISCC=$dir\ISCC.exe" | Out-File -Append -Encoding utf8 $env:GITHUB_ENV
+
       - name: Package
         shell: bash
         run: |
@@ -85,6 +103,49 @@ jobs:
           if [ "${{ matrix.os }}" = windows ]; then ext=".exe"; fi
           sh scripts/package.sh ${{ matrix.os }} ${{ matrix.arch }} \
             "target/${{ matrix.target }}/release/vitreus$ext" dist
+          case "${{ matrix.os }}" in
+            linux) expected="tar.gz deb rpm" ;;
+            macos) expected="tar.gz dmg" ;;
+            windows) expected="zip" ;;
+          esac
+          for kind in $expected; do
+            test -s "dist/vitreus-${{ matrix.os }}-${{ matrix.arch }}.$kind" || { echo "::error::missing .$kind"; exit 1; }
+          done
+          if [ "${{ matrix.os }}" = windows ]; then test -s dist/vitreus-setup-x64.exe; fi
+          ls -l dist
+
+      # Install what we're about to publish, the way users will.
+      - name: Try the .deb and .rpm (Ubuntu, Fedora, openSUSE)
+        if: matrix.os == 'linux'
+        run: |
+          pkg="vitreus-linux-${{ matrix.arch }}"
+          docker run --rm -v "$PWD/dist:/dist:ro" ubuntu:24.04 sh -ec \
+            "apt-get update -qq && apt-get install -y -qq /dist/$pkg.deb >/dev/null && vitreus --version && test -f /usr/share/applications/vitreus.desktop"
+          docker run --rm -v "$PWD/dist:/dist:ro" fedora:latest sh -ec \
+            "dnf install -y -q /dist/$pkg.rpm && vitreus --version"
+          docker run --rm -v "$PWD/dist:/dist:ro" opensuse/tumbleweed sh -ec \
+            "zypper --non-interactive -q install --allow-unsigned-rpm /dist/$pkg.rpm && vitreus --version"
+
+      - name: Try Setup (silent install and uninstall)
+        if: matrix.os == 'windows'
+        shell: pwsh
+        run: |
+          $p = Start-Process dist\vitreus-setup-x64.exe -Wait -PassThru -ArgumentList '/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART','/CURRENTUSER','/TASKS=addtopath'
+          if ($p.ExitCode) { throw "Setup exited with $($p.ExitCode)" }
+          $dir = Join-Path $env:LOCALAPPDATA 'Programs\Vitreus'
+          & "$dir\vitreus.exe" --version
+          if ($LASTEXITCODE) { throw 'vitreus --version failed' }
+          if (-not (Get-ItemProperty 'HKCU:\Software\RegisteredApplications' -Name Vitreus -ErrorAction SilentlyContinue)) { throw 'not registered' }
+          if ([Environment]::GetEnvironmentVariable('Path', 'User') -notlike "*$dir*") { throw 'not on PATH' }
+          Start-Process "$dir\unins000.exe" -ArgumentList '/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART'
+          for ($i = 0; ($i -lt 60) -and (Test-Path "$dir\vitreus.exe"); $i++) { Start-Sleep 1 }
+          if (Test-Path "$dir\vitreus.exe") { throw 'uninstall left vitreus.exe behind' }
+          if (Get-ItemProperty 'HKCU:\Software\RegisteredApplications' -Name Vitreus -ErrorAction SilentlyContinue) { throw 'still registered' }
+          if ([Environment]::GetEnvironmentVariable('Path', 'User') -like "*$dir*") { throw 'still on PATH' }
+
+      - name: Check the disk image
+        if: matrix.os == 'macos'
+        run: hdiutil verify "dist/vitreus-macos-${{ matrix.arch }}.dmg"
 
       - uses: actions/upload-artifact@v4
         with:
