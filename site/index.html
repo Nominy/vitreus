@@ -111,6 +111,7 @@
 
     footer { border-top: 1px solid var(--line); padding: 26px 0 40px; color: var(--muted); font-size: 14px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
     footer a { text-decoration: none; } footer a:hover { color: var(--text); }
+    footer .analytics { flex-basis: 100%; font-size: 12px; opacity: .8; }
 
     h2 { font: 600 clamp(24px, 3vw, 30px)/1.2 var(--display); letter-spacing: -.6px; margin: 0 0 8px; }
     .sub { color: var(--muted); margin: 0 0 22px; max-width: 680px; }
@@ -246,6 +247,7 @@
     <footer>
       <span>Vitreus · free and open source (MIT) · inspired by Picasa Photo Viewer and FlyPhotos</span>
       <span><a href="https://github.com/Nominy/vitreus/releases">Download</a> · <a href="https://github.com/Nominy/vitreus">GitHub</a></span>
+      <span class="analytics">This site counts visits with <a href="https://www.cloudflare.com/web-analytics/">Cloudflare Web Analytics</a>, without cookies. The app collects nothing; it only asks GitHub whether there's a new version.</span>
     </footer>
   </div>
 
@@ -304,5 +306,7 @@
       setTimeout(() => (copy.textContent = "Copy"), 1400);
     };
   </script>
+  <!-- Cloudflare Web Analytics: cookieless visit counts for this page. -->
+  <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "d1d96bbc918a4339acff7fbfc822f09f"}'></script>
 </body>
 </html>
