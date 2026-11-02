@@ -49,19 +49,32 @@ No library, no import, no account: just a viewer, in the spirit of Picasa Photo 
 
 ## Install
 
-**macOS and Linux**
+**Download**
+
+| | |
+|--|--|
+| Windows 10 / 11 | [Vitreus Setup](https://github.com/Nominy/vitreus/releases/latest/download/vitreus-setup-x64.exe) |
+| macOS | [Apple silicon](https://github.com/Nominy/vitreus/releases/latest/download/vitreus-macos-arm64.dmg) · [Intel](https://github.com/Nominy/vitreus/releases/latest/download/vitreus-macos-x64.dmg) (disk image: drag Vitreus to Applications) |
+| Ubuntu, Debian, Mint | [.deb x64](https://github.com/Nominy/vitreus/releases/latest/download/vitreus-linux-x64.deb) · [arm64](https://github.com/Nominy/vitreus/releases/latest/download/vitreus-linux-arm64.deb) |
+| Fedora, openSUSE | [.rpm x64](https://github.com/Nominy/vitreus/releases/latest/download/vitreus-linux-x64.rpm) · [arm64](https://github.com/Nominy/vitreus/releases/latest/download/vitreus-linux-arm64.rpm) |
+
+Vitreus isn't code-signed yet, so the first launch needs one extra click:
+Windows SmartScreen says *Windows protected your PC*: click **More info → Run
+anyway**. macOS says it can't verify Vitreus: open **System Settings → Privacy
+& Security** and click **Open Anyway**. Setup asks whether to make Vitreus your
+default photo viewer and opens Windows' Default apps page for it.
+
+**Or from a terminal** (no warnings, no admin)
 
 ```sh
-curl -fsSL https://nominy.github.io/vitreus/install | sh
+curl -fsSL https://nominy.github.io/vitreus/install | sh         # macOS and Linux
 ```
-
-**Windows** (PowerShell)
 
 ```powershell
-irm https://nominy.github.io/vitreus/install.ps1 | iex
+irm https://nominy.github.io/vitreus/install.ps1 | iex           # Windows (PowerShell)
 ```
 
-The installer downloads the latest release, verifies its checksum, installs it
+The script downloads the latest release, verifies its checksum, installs it
 for your user (no admin or sudo) and registers Vitreus as a photo viewer. On
 macOS and Linux it becomes the default viewer straight away; Windows doesn't
 let apps do that silently, so the installer opens **Settings → Default apps**
@@ -103,11 +116,14 @@ $env:VITREUS_SCOPE = 'Machine'    # -Scope Machine: all users, from an elevated 
 $env:VITREUS_NO_DEFAULT = '1'     # -NoDefault
 ```
 
-Uninstall with `curl -fsSL https://nominy.github.io/vitreus/install | sh -s -- --uninstall`,
-or on Windows via **Apps & features → Vitreus → Uninstall**.
+Uninstall with **Settings → Apps → Vitreus → Uninstall** on Windows, by
+dragging Vitreus to the Bin on macOS, with your package manager for the
+.deb/.rpm (`sudo apt remove vitreus`, `sudo dnf remove vitreus`), or with
+`curl -fsSL https://nominy.github.io/vitreus/install | sh -s -- --uninstall`
+for a script install.
 
-Every [release](https://github.com/Nominy/vitreus/releases) also has the plain
-archives, `SHA256SUMS` and both installers attached. On Windows, run
+Every [release](https://github.com/Nominy/vitreus/releases) also has plain
+archives, `SHA256SUMS` and both install scripts. On Windows, run
 `vitreus --register` once to add an unzipped copy to "Open with" and Default Apps.
 
 Linux needs xkbcommon, Wayland or X11, Vulkan and fontconfig, which desktop
@@ -116,7 +132,9 @@ installs already have; the installer names any missing package.
 
 **Updates.** When it opens, Vitreus checks in the background (at most every six
 hours) for a newer release. If there is one, a small notice in the title bar
-offers **Update**, which reinstalls the same way you installed and reopens your
+offers **Update**, which updates the same way you installed (Setup, install
+script, Scoop, winget, Homebrew, or apt/dnf/zypper after asking for your
+password) and reopens your
 photo, or **Skip**, which stays quiet until the next version. The check fetches
 one tiny file from GitHub and sends nothing about you; turn it off in Settings.
 
@@ -197,8 +215,10 @@ sending a PR.
 | `src/decode.rs`, `src/codecs/` | decoding, orientation, resizing; RAW, JPEG XL, PSD, HEIC/AVIF |
 | `src/register.rs` | `vitreus --register`: Windows file-type registration |
 | `src/update.rs` | update check and one-click update |
-| `install.sh`, `install.ps1` | the installers |
-| `scripts/` | release packaging and package-manager manifests |
+| `install.sh`, `install.ps1` | the install scripts |
+| `assets/windows/vitreus.iss` | Windows Setup (Inno Setup) |
+| `assets/linux/` | .deb/.rpm definition (nfpm), desktop entry, AppStream metadata |
+| `scripts/` | release packaging (archives, Setup, DMG, .deb, .rpm) and package-manager manifests |
 | `site/` | the website at nominy.github.io/vitreus |
 
 To release: bump `version` in `Cargo.toml`, commit, then
