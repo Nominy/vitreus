@@ -3,6 +3,9 @@
 //! and the maximized window covers the whole screen, not just the area left
 //! between them.
 
+// objc 0.2's msg_send! checks a `verify_message` feature this crate doesn't have.
+#![allow(unexpected_cfgs)]
+
 use core_graphics::geometry::CGRect;
 use gpui::Window;
 use objc::runtime::{BOOL, NO, Object, YES};
@@ -26,7 +29,8 @@ pub fn hide_menu_bar_and_dock() {
 /// Dock sit. With `force` false only a zoomed (maximized) window is grown, so
 /// a window the user sized themselves stays as it is.
 pub fn cover_screen(window: &Window, force: bool) {
-    let Ok(handle) = window.window_handle() else { return };
+    // gpui's own Window::window_handle() returns a gpui handle; we want AppKit's.
+    let Ok(handle) = HasWindowHandle::window_handle(window) else { return };
     let RawWindowHandle::AppKit(handle) = handle.as_raw() else { return };
     unsafe {
         let view = handle.ns_view.as_ptr() as *mut Object;
