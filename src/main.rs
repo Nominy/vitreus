@@ -6,6 +6,8 @@ mod codecs;
 mod decode;
 mod info;
 mod loader;
+#[cfg(target_os = "macos")]
+mod macos;
 mod register;
 mod settings;
 mod update;
@@ -74,8 +76,20 @@ fn main() {
         .detach();
 
         let restore = Bounds::centered(None, size(px(1280.0), px(840.0)), cx);
+        // macOS: start over the whole screen; the menu bar and Dock auto-hide
+        // while Vitreus is active (src/macos.rs). Elsewhere: maximized.
+        #[cfg(target_os = "macos")]
+        let window_bounds = {
+            macos::hide_menu_bar_and_dock();
+            match cx.primary_display() {
+                Some(display) => WindowBounds::Windowed(display.bounds()),
+                None => WindowBounds::Maximized(restore),
+            }
+        };
+        #[cfg(not(target_os = "macos"))]
+        let window_bounds = WindowBounds::Maximized(restore);
         let options = WindowOptions {
-            window_bounds: Some(WindowBounds::Maximized(restore)),
+            window_bounds: Some(window_bounds),
             titlebar: Some(TitlebarOptions {
                 title: Some("Vitreus".into()),
                 appears_transparent: true,
@@ -92,6 +106,22 @@ fn main() {
                 cx.new(|cx| Viewer::new(initial, window, cx))
             })
             .expect("failed to open the viewer window");
+
+        // AppKit may keep a new window clear of the menu bar; once Vitreus is
+        // active (menu bar and Dock hidden), grow it over the full screen, and
+        // again whenever it comes back while still maximized.
+        #[cfg(target_os = "macos")]
+        window
+            .update(cx, |_, window, cx| {
+                let mut first = true;
+                cx.observe_window_activation(window, move |_, window, _| {
+                    if window.is_window_active() {
+                        macos::cover_screen(window, std::mem::take(&mut first));
+                    }
+                })
+                .detach();
+            })
+            .ok();
 
         cx.spawn(async move |cx| {
             while let Some(path) = opened_rx.next().await {

@@ -161,7 +161,9 @@ vitreus photo.jpg     # or a folder; or just double-click a photo
 | Open | <kbd>Ctrl</kbd>+<kbd>O</kbd> | drop a file on the window |
 | Close | <kbd>Esc</kbd> | click the dimmed background |
 
-On macOS <kbd>Ctrl</kbd> is <kbd>Cmd</kbd>.
+On macOS <kbd>Ctrl</kbd> is <kbd>Cmd</kbd>, and the menu bar and Dock slide away
+while Vitreus is in front so the photo has the whole screen (they're back as soon
+as you switch apps, or point at the top edge for the menu).
 
 ### Settings
 

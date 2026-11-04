@@ -31,11 +31,14 @@ windows = { version = "0.61", features = [
 ] }
 windows-registry = "0.5"
 
-# HEIC/AVIF backends use the OS decoders; these are already in gpui's tree.
+# HEIC/AVIF backends use the OS decoders, and the window covers the menu bar
+# and Dock (src/macos.rs); these are already in gpui's tree.
 [target.'cfg(target_os = "macos")'.dependencies]
 core-foundation = "0.10"
 core-graphics = "0.24"
 foreign-types = "0.5"
+objc = "0.2"
+raw-window-handle = "0.6"
 
 [target.'cfg(any(target_os = "linux", target_os = "freebsd"))'.dependencies]
 libloading = "0.8"

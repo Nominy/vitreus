@@ -6229,6 +6229,8 @@ dependencies = [
  "jxl-oxide",
  "kamadak-exif",
  "libloading",
+ "objc",
+ "raw-window-handle",
  "resvg",
  "trash",
  "windows 0.61.3",
