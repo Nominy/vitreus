@@ -162,7 +162,7 @@
         </p>
         <label class="dl-all" id="ad-choice" hidden>
           <input type="checkbox" id="ad-consent" autocomplete="off">
-          Allow OpenAI to measure installer clicks for ChatGPT Ads using cookies. Optional; turn off here anytime.
+          Measure installer clicks with ChatGPT Ads cookies. Uncheck to turn off.
         </label>
       </div>
 
@@ -251,7 +251,7 @@
     <footer>
       <span>Vitreus · free and open source (MIT) · inspired by Picasa Photo Viewer and FlyPhotos</span>
       <span><a href="https://github.com/Nominy/vitreus/releases">Download</a> · <a href="https://github.com/Nominy/vitreus">GitHub</a></span>
-      <span class="analytics">This site counts visits with <a href="https://www.cloudflare.com/web-analytics/">Cloudflare Web Analytics</a>, without cookies. If you opt in <a href="#ad-choice">by the download links</a>, the OpenAI pixel can store an ad click reference in a cookie and report installer clicks. It does not confirm downloads or installs. The desktop app collects nothing; it only asks GitHub whether there's a new version.</span>
+      <span class="analytics">This site counts visits with <a href="https://www.cloudflare.com/web-analytics/">Cloudflare Web Analytics</a>, without cookies. ChatGPT Ads measurement is on by default unless your browser signals Global Privacy Control. The OpenAI pixel can store an ad click reference in a cookie and report installer clicks, not completed downloads or installs. You can <a href="#ad-choice">turn measurement off by the download links</a>. The desktop app collects nothing; it only asks GitHub whether there's a new version.</span>
     </footer>
   </div>
 
@@ -312,38 +312,40 @@
 
     const consent = document.getElementById("ad-consent");
     const consentKey = "vitreus:chatgpt-ads-consent";
-    function applyConsent(allowed) {
+    function applyPreference(choice) {
+      const allowed = choice === "yes" || (choice === null && !navigator.globalPrivacyControl);
       consent.checked = allowed;
       if (!window.oaiq && allowed) {
-        // Queue commands while the SDK loads; never request it before opt-in.
+        // Queue commands until the SDK loads. A default is not explicit consent.
         const q = function () { q.q.push(arguments); };
         q.q = [];
         window.oaiq = q;
-        q("consent", true);
+        if (choice === "yes") q("consent", true);
         q("init", { pixelId: "X5qLNrfyVsgZP1XaYe653o" });
         const sdk = document.createElement("script");
         sdk.async = true;
         sdk.src = "https://bzrcdn.openai.com/sdk/oaiq.min.js";
         document.head.append(sdk);
-      } else {
+      } else if (!allowed || choice === "yes") {
         window.oaiq?.("consent", allowed);
       }
     }
-    function restoreConsent() {
-      let allowed = false;
-      try { allowed = localStorage.getItem(consentKey) === "yes"; } catch { /* Storage may be disabled. */ }
-      applyConsent(allowed);
+    function restorePreference() {
+      let choice = "no"; // If storage is inaccessible, don't assume an earlier opt-out is absent.
+      try { choice = localStorage.getItem(consentKey); } catch { /* This visit only. */ }
+      applyPreference(choice);
     }
-    restoreConsent();
+    restorePreference();
     document.getElementById("ad-choice").hidden = false;
     consent.addEventListener("change", () => {
-      try { localStorage.setItem(consentKey, consent.checked ? "yes" : "no"); } catch { /* This visit only. */ }
-      applyConsent(consent.checked);
+      const choice = consent.checked ? "yes" : "no";
+      try { localStorage.setItem(consentKey, choice); } catch { /* This visit only. */ }
+      applyPreference(choice);
     });
     window.addEventListener("storage", e => {
-      if (e.key === consentKey || e.key === null) restoreConsent();
+      if (e.key === consentKey || e.key === null) restorePreference();
     });
-    window.addEventListener("pageshow", e => { if (e.persisted) restoreConsent(); });
+    window.addEventListener("pageshow", e => { if (e.persisted) restorePreference(); });
 
     function measureDownload(e) {
       if (!consent.checked || !e.target.closest("a[href]")?.href.startsWith(base)) return;
