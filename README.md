@@ -229,6 +229,11 @@ macOS arm64/x64 and Linux x64/arm64 and publishes the release with checksums,
 the installers and `latest.json` (read by the in-app update check). The *Pages*
 workflow publishes `site/` and the installers.
 
+The landing page sends the ChatGPT Ads custom event `download_click` only when
+a visitor opts in and clicks a direct installer link. It measures neither
+completed downloads nor app installs. To verify after a Pages deploy, opt in,
+click an installer, and look for `download_click` in Ads Manager → Event Stream.
+
 Each release also updates the Scoop bucket (`Nominy/scoop-bucket`) and the
 Homebrew tap (`Nominy/homebrew-tap`) through the `PACKAGES_TOKEN` secret, and
 opens a winget pull request once a `WINGET_TOKEN` secret exists.

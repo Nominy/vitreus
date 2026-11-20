@@ -160,6 +160,10 @@
           <a href="https://github.com/Nominy/vitreus/releases/latest/download/vitreus-linux-x64.rpm">.rpm</a> ·
           <a href="https://github.com/Nominy/vitreus/releases/latest">Arm64 &amp; more</a>
         </p>
+        <label class="dl-all" id="ad-choice" hidden>
+          <input type="checkbox" id="ad-consent" autocomplete="off">
+          Allow OpenAI to measure installer clicks for ChatGPT Ads using cookies. Optional; turn off here anytime.
+        </label>
       </div>
 
       <div class="install">
@@ -247,7 +251,7 @@
     <footer>
       <span>Vitreus · free and open source (MIT) · inspired by Picasa Photo Viewer and FlyPhotos</span>
       <span><a href="https://github.com/Nominy/vitreus/releases">Download</a> · <a href="https://github.com/Nominy/vitreus">GitHub</a></span>
-      <span class="analytics">This site counts visits with <a href="https://www.cloudflare.com/web-analytics/">Cloudflare Web Analytics</a>, without cookies. The app collects nothing; it only asks GitHub whether there's a new version.</span>
+      <span class="analytics">This site counts visits with <a href="https://www.cloudflare.com/web-analytics/">Cloudflare Web Analytics</a>, without cookies. If you opt in <a href="#ad-choice">by the download links</a>, the OpenAI pixel can store an ad click reference in a cookie and report installer clicks. It does not confirm downloads or installs. The desktop app collects nothing; it only asks GitHub whether there's a new version.</span>
     </footer>
   </div>
 
@@ -305,6 +309,49 @@
       copy.textContent = "Copied";
       setTimeout(() => (copy.textContent = "Copy"), 1400);
     };
+
+    const consent = document.getElementById("ad-consent");
+    const consentKey = "vitreus:chatgpt-ads-consent";
+    function applyConsent(allowed) {
+      consent.checked = allowed;
+      if (!window.oaiq && allowed) {
+        // Queue commands while the SDK loads; never request it before opt-in.
+        const q = function () { q.q.push(arguments); };
+        q.q = [];
+        window.oaiq = q;
+        q("consent", true);
+        q("init", { pixelId: "X5qLNrfyVsgZP1XaYe653o" });
+        const sdk = document.createElement("script");
+        sdk.async = true;
+        sdk.src = "https://bzrcdn.openai.com/sdk/oaiq.min.js";
+        document.head.append(sdk);
+      } else {
+        window.oaiq?.("consent", allowed);
+      }
+    }
+    function restoreConsent() {
+      let allowed = false;
+      try { allowed = localStorage.getItem(consentKey) === "yes"; } catch { /* Storage may be disabled. */ }
+      applyConsent(allowed);
+    }
+    restoreConsent();
+    document.getElementById("ad-choice").hidden = false;
+    consent.addEventListener("change", () => {
+      try { localStorage.setItem(consentKey, consent.checked ? "yes" : "no"); } catch { /* This visit only. */ }
+      applyConsent(consent.checked);
+    });
+    window.addEventListener("storage", e => {
+      if (e.key === consentKey || e.key === null) restoreConsent();
+    });
+    window.addEventListener("pageshow", e => { if (e.persisted) restoreConsent(); });
+
+    function measureDownload(e) {
+      if (!consent.checked || !e.target.closest("a[href]")?.href.startsWith(base)) return;
+      window.oaiq?.("measure", "custom", { type: "custom" }, { custom_event_name: "download_click" });
+    }
+    const download = document.querySelector(".download");
+    download.addEventListener("click", measureDownload);
+    download.addEventListener("auxclick", e => { if (e.button === 1) measureDownload(e); });
   </script>
   <!-- Cloudflare Web Analytics: cookieless visit counts for this page. -->
   <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "d1d96bbc918a4339acff7fbfc822f09f"}'></script>
